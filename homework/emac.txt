@@ -1,0 +1,2 @@
+This is my test of a file made in emacs. This program seems confusing but it seems like it works much more in-depth than vim. I learned quite a bit about navig
+ation, the meta and file creation. It'll take a while to get used to this.
