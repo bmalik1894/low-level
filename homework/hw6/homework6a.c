@@ -18,25 +18,11 @@ void print(int a[], int size);
 int find_out_of_order(int a[], int size);
 
 /* main program */
-int main(const char* input, const char* output) {
+int main(void) {
 
 	int data[MAX_COUNT];
-    int lines = 0;
-    char* temp[MAX_COUNT];
 	int count;
 	int seed;
-
-    // FILE * fpoint1;
-    FILE * fpoint2;
-
-    // fpoint1 = fopen(input, "r");
-    /* while(!feof(fpoint1)) {
-        fgets(temp, 1, fpoint1)
-        data[i] = temp
-        i++;
-    }
-    */
-    fpoint2 = fopen(output, "w");
 
 	/* prompt for how many to sort, seed for rand() */
 	printf("how many to sort?\n");
@@ -73,7 +59,7 @@ int main(const char* input, const char* output) {
 		printf("not sorted\n");
 		printf("first out-of-order element at index %d\n", out_of_order);
 	}
-    fclose(fpoint2)
+
 	return EXIT_SUCCESS;
 }
 
@@ -87,7 +73,7 @@ void fill_with_random(int a[], int size) {
 /* print array */
 void print(int a[], int size) {
 	for (int i=0; i < size; ++i) {
-		fprintf(fpoint2, "%d\n", a[i]);
+		printf("%d\n", a[i]);
 	}
 }
 
@@ -109,9 +95,9 @@ void sort(int a[], int size) {
 	    for(int i = 0; i < size - 1; i++) {
         for(int j = 0; j < size - 1 - i; j++) {
             if(a[j] > a[j+1]) {
-                int tmp = a[j]
-                a[j] = a[j+1]
-                a[j+1] = tmp
+                int tmp = a[j];
+                a[j] = a[j+1];
+                a[j+1] = tmp;
                 }
         }
     }
