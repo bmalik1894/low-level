@@ -1,7 +1,8 @@
 #include "int-bst.h"
 static int_bst_node_t * helper_insert(int_bst_node_t * t, int_bst_node_t * newnode);
+static int_bst_node_t * helper_remove(int_bst_node_t * t, int n);
 bool int_bst_find(int_bst_node_t * t, int n);
-
+static int_bst_node_t * getMax(int_bst_node_t * t);
 
 // INSERT FUNCTION
 bool int_bst_insert(int_bst_node_t ** t_p, int n) {
@@ -16,12 +17,6 @@ bool int_bst_insert(int_bst_node_t ** t_p, int n) {
         free(new_p);
         return false;
     }
-
-    // if (int_bst_find(* t_p, n) == true) { // if node already in tree, return false
-    //     free(new_p);
-    //     printf("\nalready_in_tree\n");
-    //     return false;
-    // }
 
     if (* t_p == NULL) { // if empty tree, root = n
         *t_p = new_p;
@@ -83,97 +78,152 @@ bool int_bst_find(int_bst_node_t * t, int n) { // easy to describe recursively
     // else case
 }
 
+// REMOVE FUNCTION
 void int_bst_remove(int_bst_node_t ** t_p, int n) {
-    if(int_bst_find(*t_p,n)) {
-    * t_p = helper_remove(*t_p,n);
+    if(int_bst_find(*t_p,n)) { // checks that the element exists
+        * t_p = helper_remove(*t_p,n);
     }
-    // if empty tree, stop
-    // if left == null && right == null, go back one and remove left/right
-    // if left == null, root = right
-    // if right == null root = left
-    // else keep going left until left == null. 
+
 }
 
-/*
- * helper for remove --  returns list with item(s) removed
- *
- * recursive strategy:
- *
- * if empty list, new list is list
- *
- * else if item smaller than head of list, not in list, so new list is just
- * list
- *
- * else if item matches head of list, new list is rest of list, with any
- * other occurrences of item removed
- *
- * else new list is list's head followed by result of removing item from 
- * rest of list
- */
-
-static int_bst_node_t * passUpMax(int_bst_node_t * t) {
-    if (t->right == NULL) {
+//removal helper helper
+static int_bst_node_t * getMax(int_bst_node_t * t) { // make sure to do this on t->left
+    if (t->right == NULL) { // just in case theres the max on the left is the root
+        if(t->left != NULL) {
         return t;
+        }
     }
-}
+    
+    else if (t->right->right == NULL) {
 
-static int_bst_node_t * getMax(int_bst_node_t * t) {
-    if (t->right == NULL) {
-        return t;
+        int_bst_node_t * tmp_node = t->right;
+        t->right = t->right->left;
+        free(t->right);
+        t->right = NULL;
+        return tmp_node;
     }
+
     else {
-        return getMax(t->right);
+        getMax(t->right);
     }
 }
 
 
-static int_bst_node_t * helper_remove(int_bst_node_t * t, int n) {
+static int_bst_node_t * helper_remove(int_bst_node_t * t, int n) { // try to stop at parent node of removal node
 	if (t == NULL) { // if the list is empty
 		return t;
 	}
 
-
-
-    if(t->left->data == n) {
-        if(t->right->data == NULL) {
-            int_bst_node_t * new_tree = t;
-            free(t->left);
-            t->left = NULL;
-            return new_tree;
+    if (t->data != n /*|| t->left->data != n || t->right->data != n*/) { // recurses to data point 
+        if(n <= t->data) {
+            int_bst_node_t * new_t = t;
+            new_t->right = t->right;
+            new_t->left  = helper_remove(t->left,n);
+            free(t);
+            return new_t;
         }
-
+        else if(n > t->data) {
+            int_bst_node_t * new_t = t;
+            new_t->left = t->left;
+            new_t->right  = helper_remove(t->right,n);
+            free(t);
+            return new_t;
+        }
     }
 
-    
+
+
+    if (t->data == n) { // case: root is removal node
+        if(t->left == NULL && t->right != NULL) { // no left node
+                int_bst_node_t * tmp_node = t->right;
+                free(t);
+                return tmp_node;
+        }
+        if(t->left != NULL && t->right == NULL) { // no right node
+                int_bst_node_t * tmp_node = t->left;
+                free(t);
+                return tmp_node;
+        }
+        if(t->right == NULL && t->left == NULL) { // no children
+            free(t);
+            return NULL;
+        }
+        if(t->right != NULL && t->left != NULL) { // both children
+            int_bst_node_t * tmp_left = t->left;
+            int_bst_node_t * max = getMax(t->left); // gets max node of left child
+            max->right = t->right; // max node of left child
+            if (max->data == tmp_left->data) max->left = tmp_left->left;
+            else max->left = tmp_left;
+            free(t);
+            return max;
+        } 
+    } 
 
 
 
 
+    // if(t->left->data == n) { // case: child of root is removal node
+    //     if(t->left->left == NULL && t->left->right == NULL) {
+    //         free(t->left);
+    //         t->left = NULL;
+    //         return t;
+    //     }
+        
+    //     if(t->left->left == NULL && t->left->right != NULL) {
+    //         int_bst_node_t * tmp_node = t->left->right;
+    //         free(t->left);
+    //         t->left = tmp_node;
+    //         return t;
+            
+    //     }
+    //     if(t->left->left != NULL && t->left->right == NULL) {
+    //         int_bst_node_t * tmp_node = t;
+    //         free(t->left);
+    //         t->left = tmp_node;
+    //         return t;
+    //     }
+    //     if(t->left->left != NULL && t->left->right != NULL) {
+    //         int_bst_node_t * max = getMax(t->left->left);
+
+    //     }
+
+    // }
+
+    // if(t->right->data == n) {
+    //     if(t->right->left == NULL && t->right->right == NULL) {
+    //         free(t->right);
+    //         t->right = NULL;
+    //         return t;
+    //     }
+        
+    //     if(t->right->left == NULL && t->right->right != NULL) {
+    //         int_bst_node_t * tmp_node = t->right->right;
+    //         free(t->right);
+    //         t->right = tmp_node;
+    //         return t;
+            
+    //     }
+    //     if(t->right->left != NULL && t->right->right == NULL) {
+    //         int_bst_node_t * tmp_node = t->right->left;
+    //         free(t->right);
+    //         t->right = tmp_node;
+    //         return t;
+    //     }
+    //     if(t->right->left != NULL && t->right->right != NULL) {
+    //         // HARD PART
+    //     }
 
 
+    //     return t;
+    //}
 
-
-
-
-	// else if (t->data == n) {
-	// 	/* element in list -- remove this one and recurse */
-	// 	int_bst_node_t *new_list = helper_remove(t->next, n);
-	// 	free(t);
-	// 	return new_list;
-	// }
-	// else {
-	// 	/* element could be in list, but later -- recurse */
-	// 	int_bst_node_t *new_list = 
-	// 		helper_remove(t->next, n);
-	// 	t->next = new_list;
-	// 	return lst;
-	// }
 }
 
 void int_bst_remove_all(int_bst_node_t ** t_p) { //recurse everywhere and free the data
-    if(t_p == NULL) { // base case: if tree is empty, done
-    NULL;
-    }
+    //while(*t_p != NULL) { // base case: if tree is empty, done
+    //int dat = (int) * t_p->data;
+    //int_bst_remove(*t_p,dat)
+    //}
 }
 
 void int_bst_print_elements(int_bst_node_t * t, FILE * f, char * fmt) { // prints in-order
@@ -191,5 +241,21 @@ void int_bst_print_elements(int_bst_node_t * t, FILE * f, char * fmt) { // print
 }
 
 void int_bst_print_as_tree(int_bst_node_t * t, FILE * f) {
+    if(t == NULL) {
+        fprintf(f,".");
+    }
+    else {
+        fprintf(f,"%d\n",t->data);
+        
+        if(t->left != NULL) {
+            fprintf(f,"  ");
+            int_bst_print_as_tree(t->left,f);
+        }
+        
+        if(t->right != NULL) {
+            fprintf(f,"  ");
+            int_bst_print_as_tree(t->right,f);
+        }
+    }
 
 }
